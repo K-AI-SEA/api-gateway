@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE: docker.io/kaisea/api-gateway
+  IMAGE: docker.io/bklooste/api-gateway
 
 jobs:
   test:

@@ -45,7 +45,7 @@ spec:
     spec:
       containers:
       - name: api-gateway
-        image: kaisea/api-gateway:0.1
+        image: bklooste/api-gateway:0.1
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
