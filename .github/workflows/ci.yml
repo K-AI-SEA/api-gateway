@@ -96,6 +96,10 @@ jobs:
         with:
           global-json-file: global.json
 
+      # The org name is upper case; image references must be lower case.
+      - name: Lower-case image name
+        run: echo "IMAGE=${IMAGE,,}" >> "$GITHUB_ENV"
+
       - name: Compute version (Nerdbank.GitVersioning)
         id: nbgv
         uses: dotnet/nbgv@v0.4
