@@ -1,7 +1,7 @@
 # api-gateway
 
 [![CI](https://github.com/bklooste/api-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/bklooste/api-gateway/actions/workflows/ci.yml)
-[![Image](https://img.shields.io/badge/ghcr.io-api--gateway-blue)](https://github.com/bklooste/api-gateway/pkgs/container/api-gateway%2Fgateway)
+[![Docker Hub](https://img.shields.io/docker/v/kaisea/api-gateway?label=docker%20hub)](https://hub.docker.com/r/kaisea/api-gateway)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A small **config-driven API gateway**. You give it a JSON route table; it matches incoming requests,
