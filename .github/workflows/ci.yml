@@ -14,7 +14,11 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'lode-ci' }}
+    env:
+      # Unique per run: the box runners share one Docker daemon.
+      SMOKE: smoke-${{ github.run_id }}-${{ github.run_attempt }}
+      COMPOSE_PROJECT_NAME: ci-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,18 +45,24 @@ jobs:
 
       # Container smoke test: the built image must start and report healthy before it can be published.
       - name: Build image
-        run: docker build -t smoke:ci .
+        run: docker build -t "$SMOKE:ci" .
       # The image must start with no configuration at all — an unconfigured gateway serves an empty
       # route table rather than failing, so a missing ConfigMap is a 404, not a crash loop.
       - name: Smoke test
         run: |
-          docker run -d --name smoke -p 8080:8080 smoke:ci
+          docker run -d --name "$SMOKE" "$SMOKE:ci"
           for i in $(seq 1 30); do
-            [ "$(docker inspect -f '{{.State.Health.Status}}' smoke)" = healthy ] && break
+            [ "$(docker inspect -f '{{.State.Health.Status}}' "$SMOKE")" = healthy ] && break
             sleep 2
-            if [ "$i" = 30 ]; then docker logs smoke; exit 1; fi
+            if [ "$i" = 30 ]; then docker logs "$SMOKE"; exit 1; fi
           done
-          docker rm -f smoke
+          docker rm -f "$SMOKE"
+      - name: Smoke cleanup
+        if: always()
+        run: |
+          docker rm -f "$SMOKE" "$SMOKE-redis" 2>/dev/null || true
+          docker network rm "$SMOKE" 2>/dev/null || true
+          docker rmi "$SMOKE:ci" 2>/dev/null || true
 
       # End-to-end against the real http-rediscache container and a MockServer upstream: proves
       # proxying, scope checks, caching and hot route reload on a mounted volume.
@@ -68,7 +78,7 @@ jobs:
   publish:
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'lode-ci' }}
     environment: production
     permissions:
       contents: write        # tag + release
